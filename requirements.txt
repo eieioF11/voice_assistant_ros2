@@ -1,0 +1,6 @@
+requests
+SpeechRecognition
+pyaudio
+soundfile
+openai
+openai-whisper
