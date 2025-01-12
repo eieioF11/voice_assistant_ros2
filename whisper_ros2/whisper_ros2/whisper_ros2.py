@@ -62,6 +62,7 @@ class WhisperNode(Node):
         self.get_logger().info("%s done." % self.SELFNODE)
 
     def get_text(self):
+        self.get_logger().info("Listening ...")
         with sr.Microphone(sample_rate=16_000) as source:
             self.get_logger().info("Talk to me. ")
             self.recognizer.adjust_for_ambient_noise(source)

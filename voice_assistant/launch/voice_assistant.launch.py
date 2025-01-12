@@ -23,13 +23,13 @@ def generate_launch_description():
             output="screen",
             respawn=True,
         ),
-        # Node(
-        #     package='whisper_ros2',
-        #     executable='whisper_ros2',
-        #     namespace='',
-        #     output="screen",
-        #     respawn=True,
-        # ),
+        Node(
+            package='whisper_ros2',
+            executable='whisper_ros2',
+            namespace='',
+            output="screen",
+            respawn=True,
+        ),
         Node(
             package='voicevox_ros2',
             executable='voicevox_ros2',

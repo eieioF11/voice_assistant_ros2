@@ -50,18 +50,18 @@ public:
           RCLCPP_INFO(this->get_logger(), "text: %s", msg->data.c_str());
           talk_pub_->publish(make_talk(msg->data));
           speaking_       = true;
-          listening_time_ = this->get_now();
+          listening_time_ = this->now();
         });
     timer_          = this->create_wall_timer(20ms, [&]() {
       bool listening = false;
       if (!speaking_) listening = true;
       if (speaking_) {
-        double elapsed = (this->get_now() - listening_time_).seconds();
+        double elapsed = (this->now() - listening_time_).seconds();
         if (elapsed > INTERVAL) speaking_ = false;
       }
       listening_pub_->publish(ros2_utils::make_bool(listening));
     });
-    listening_time_ = this->get_now();
+    listening_time_ = this->now();
   }
 
 private:
