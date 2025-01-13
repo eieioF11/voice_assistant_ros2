@@ -43,13 +43,10 @@ public:
       std::this_thread::sleep_for(1s);
     }
     talk_pub_->publish(make_talk("ボイスアシスタントを起動しました"));
-    listening_pub_->publish(ros2_utils::make_bool(true));
     text_sub_ =
         this->create_subscription<std_msgs::msg::String>("chatgpt/output_text", rclcpp::QoS(10), [&](const std_msgs::msg::String::SharedPtr msg) {
           RCLCPP_INFO(this->get_logger(), "text: %s", msg->data.c_str());
           talk_pub_->publish(make_talk(msg->data));
-          speaking_       = true;
-          listening_time_ = this->now();
         });
     // timer_          = this->create_wall_timer(20ms, [&]() {});
   }
