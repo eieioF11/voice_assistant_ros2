@@ -1,5 +1,6 @@
 import os
 import numpy as np
+from multiprocessing import Process
 # ros2
 import rclpy
 from rclpy.node import Node
@@ -56,7 +57,8 @@ class WhisperNode(Node):
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.speak_sub_ = self.create_subscription(
             Bool, 'voicevox_ros2/speak', self.speak_callback, 1)
-        self.speak = False
+        self.speak = True
+        self.log_out = False
 
     def __del__(self):
         self.get_logger().info("%s done." % self.SELFNODE)
@@ -66,16 +68,20 @@ class WhisperNode(Node):
         with sr.Microphone(sample_rate=16_000) as source:
             self.get_logger().info("Talk to me. ")
             self.recognizer.adjust_for_ambient_noise(source)
-            audio = self.recognizer.listen(source)
-        self.get_logger().info("Voice processing ...")
-        # 「音声データをWhisperの入力形式に変換」参照
-        wav_bytes = audio.get_wav_data()
-        wav_stream = BytesIO(wav_bytes)
-        audio_array, sampling_rate = sf.read(wav_stream)
-        audio_fp32 = audio_array.astype(np.float32)
-        result = self.model.transcribe(audio_fp32, language="ja", fp16=False)
-        # print(result["text"])
-        return result["text"]
+            audio = self.recognizer.listen(source, timeout=1000.0)
+        try:
+            self.get_logger().info("Voice processing ...")
+            # 「音声データをWhisperの入力形式に変換」参照
+            wav_bytes = audio.get_wav_data()
+            wav_stream = BytesIO(wav_bytes)
+            audio_array, sampling_rate = sf.read(wav_stream)
+            audio_fp32 = audio_array.astype(np.float32)
+            result = self.model.transcribe(audio_fp32, language="ja", fp16=False)
+            return result["text"]
+            # print(result["text"])
+        except sr.UnknownValueError:
+            self.get_logger().info("Sorry, I could not understand what you said.")
+        return None
 
     def param(self, name, value):
         self.declare_parameter(name, value)
@@ -84,13 +90,22 @@ class WhisperNode(Node):
     def speak_callback(self, msg):
         self.speak = msg.data
 
-    def timer_callback(self):
+    def listen_task(self):
         if self.speak:
-            self.get_logger().info("Listening stop")
+            if not self.log_out:
+                self.get_logger().info("Listening stop")
+                self.log_out = True
             return
         text = self.get_text()
+        if text is None or text == "":
+            return
         self.get_logger().info("You said: %s" % text)
         self.text_pub_.publish(String(data=text))
+        self.speak = True
+        self.log_out = False
+
+    def timer_callback(self):
+        self.listen_task()
         pass
 
 
