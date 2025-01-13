@@ -38,7 +38,6 @@ public:
     std::string LOG_LEVEL_STR = param<std::string>("voice_assistant.log_level", "DEBUG"); // DEBUG, INFO, WARN, ERROR, NONE
     logger.set_log_level(ext::get_log_level(LOG_LEVEL_STR));
     talk_pub_      = this->create_publisher<voicevox_ros2_msgs::msg::Talk>("/voicevox_ros2", rclcpp::QoS(10));
-    listening_pub_ = this->create_publisher<std_msgs::msg::Bool>("whisper/listening", rclcpp::QoS(10));
     while (!talk_pub_->get_subscription_count()) {
       RCLCPP_INFO(this->get_logger(), "wait for subscriber");
       std::this_thread::sleep_for(1s);
@@ -52,16 +51,7 @@ public:
           speaking_       = true;
           listening_time_ = this->now();
         });
-    timer_          = this->create_wall_timer(20ms, [&]() {
-      bool listening = false;
-      if (!speaking_) listening = true;
-      if (speaking_) {
-        double elapsed = (this->now() - listening_time_).seconds();
-        if (elapsed > INTERVAL) speaking_ = false;
-      }
-      listening_pub_->publish(ros2_utils::make_bool(listening));
-    });
-    listening_time_ = this->now();
+    // timer_          = this->create_wall_timer(20ms, [&]() {});
   }
 
 private:
@@ -74,10 +64,8 @@ private:
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr text_sub_;
   // publisher
   rclcpp::Publisher<voicevox_ros2_msgs::msg::Talk>::SharedPtr talk_pub_;
-  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr listening_pub_;
   // timer
-  rclcpp::TimerBase::SharedPtr timer_;
-  rclcpp::Time listening_time_;
+  // rclcpp::TimerBase::SharedPtr timer_;
 
   voicevox_ros2_msgs::msg::Talk make_talk(const std::string& text) {
     voicevox_ros2_msgs::msg::Talk talk;

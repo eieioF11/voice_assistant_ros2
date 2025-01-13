@@ -54,9 +54,9 @@ class WhisperNode(Node):
         # ros2 init
         self.text_pub_ = self.create_publisher(String, 'chatgpt/input_text', 1)
         self.timer = self.create_timer(timer_period, self.timer_callback)
-        self.listening_sub_ = self.create_subscription(
-            Bool, 'whisper/listening', self.listening_callback, 1)
-        self.listening = False
+        self.speak_sub_ = self.create_subscription(
+            Bool, 'voicevox_ros2/speak', self.speak_callback, 1)
+        self.speak = False
 
     def __del__(self):
         self.get_logger().info("%s done." % self.SELFNODE)
@@ -81,11 +81,12 @@ class WhisperNode(Node):
         self.declare_parameter(name, value)
         return self.get_parameter(name).get_parameter_value()
 
-    def listening_callback(self, msg):
-        self.listening = msg.data
+    def speak_callback(self, msg):
+        self.speak = msg.data
 
     def timer_callback(self):
-        if not self.listening:
+        if self.speak:
+            self.get_logger().info("Listening stop")
             return
         text = self.get_text()
         self.get_logger().info("You said: %s" % text)
