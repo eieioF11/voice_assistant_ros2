@@ -54,9 +54,10 @@ class WhisperNode(Node):
         self.recognizer = sr.Recognizer()
         # ros2 init
         self.text_pub_ = self.create_publisher(String, 'chatgpt/input_text', 1)
-        self.timer = self.create_timer(timer_period, self.timer_callback)
         self.speak_sub_ = self.create_subscription(
             Bool, 'voicevox_ros2/speak', self.speak_callback, 1)
+        self.listen_sub_ = self.create_subscription(
+            Bool, 'whisper/listen', self.listen_callback, 1)
         self.speak = True
         self.log_out = False
 
@@ -104,8 +105,9 @@ class WhisperNode(Node):
         self.speak = True
         self.log_out = False
 
-    def timer_callback(self):
-        self.listen_task()
+    def listen_callback(self, msg):
+        if msg.data:
+            self.listen_task()
         pass
 
 
