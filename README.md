@@ -11,12 +11,8 @@ ros2 Voice Assistant node pkgs
 pip3 install -r requirements.txt
 ```
 
-### Set OpenAI API
-```bash
-export OPENAI_API_KEY="your key"
-```
-
-### Installation with apt
+### Installing Dependencies
+#### Installation with apt
 Go to the following site to add a repository
 ※Installation by rosdep is also possible by adding a repository.
 
@@ -31,12 +27,17 @@ cd ../
 colcon build --symlink-install
 ```
 
-### Build Manually
+#### Build Manually
 ```bash
 cd ros2_ws/src
 git clone --recursive https://github.com/eieioF11/ros2_common_tools.git
 cd ../
 colcon build --symlink-install
+```
+
+### Set OpenAI API
+```bash
+export OPENAI_API_KEY="your key"
 ```
 
 ## launch
